@@ -29,13 +29,14 @@ const (
 
 // AppPushOperation can be used to push buildpack apps
 type AppPushOperation struct {
-	orgName       string
-	spaceName     string
-	client        *client.Client
-	strategy      StrategyMode
-	stopped       bool
-	timeout       uint
-	checkInterval uint
+	orgName        string
+	spaceName      string
+	client         *client.Client
+	strategy       StrategyMode
+	stopped        bool
+	timeout        uint
+	checkInterval  uint
+	dockerPassword *string
 }
 
 // NewAppPushOperation creates a new AppPushOperation
@@ -72,6 +73,15 @@ func (p *AppPushOperation) WithRollingStrategy(timeout uint, checkInterval uint)
 
 func (p *AppPushOperation) WithNoStart(stopped bool) {
 	p.stopped = stopped
+}
+
+// WithDockerPassword sets the docker registry password used for this push operation.
+//
+// When set, the password takes precedence over the CF_DOCKER_PASSWORD environment
+// variable. Use this in long-running processes that push apps concurrently, where a
+// process-wide environment variable would be shared between pushes.
+func (p *AppPushOperation) WithDockerPassword(password string) {
+	p.dockerPassword = &password
 }
 
 // Push creates or updates an application using the specified manifest and zipped source files
@@ -461,7 +471,11 @@ func (p *AppPushOperation) findApp(ctx context.Context, appName string, space *r
 }
 
 func (p *AppPushOperation) uploadDockerPackage(ctx context.Context, app *resource.App, docker *AppManifestDocker) (*resource.Package, error) {
-	newPkg := resource.NewDockerPackageCreate(app.GUID, docker.Image, docker.Username, os.Getenv("CF_DOCKER_PASSWORD"))
+	password := os.Getenv("CF_DOCKER_PASSWORD")
+	if p.dockerPassword != nil {
+		password = *p.dockerPassword
+	}
+	newPkg := resource.NewDockerPackageCreate(app.GUID, docker.Image, docker.Username, password)
 	pkg, err := p.client.Packages.Create(ctx, newPkg)
 	if err != nil {
 		return nil, fmt.Errorf("error creating docker package for app %s: %w", app.Name, err)
