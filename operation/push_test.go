@@ -260,6 +260,67 @@ func TestDockerLifecycleBuildCreation(t *testing.T) {
 	require.NotNil(t, resultDroplet, "Docker lifecycle build should return a droplet")
 }
 
+func TestUploadDockerPackagePassword(t *testing.T) {
+	tests := []struct {
+		name             string
+		username         string
+		envPassword      string
+		dockerPassword   *string
+		expectedPostForm string
+	}{
+		{
+			name:             "uses CF_DOCKER_PASSWORD when no password is set on the operation",
+			username:         "user",
+			envPassword:      "env-secret",
+			expectedPostForm: `{"type":"docker","relationships":{"app":{"data":{"guid":"app-guid"}}},"data":{"image":"registry/image:latest","username":"user","password":"env-secret"}}`,
+		},
+		{
+			name:             "password set on the operation takes precedence over CF_DOCKER_PASSWORD",
+			username:         "user",
+			envPassword:      "env-secret",
+			dockerPassword:   testutil.StringPtr("op-secret"),
+			expectedPostForm: `{"type":"docker","relationships":{"app":{"data":{"guid":"app-guid"}}},"data":{"image":"registry/image:latest","username":"user","password":"op-secret"}}`,
+		},
+		{
+			name:             "empty password set on the operation does not fall back to CF_DOCKER_PASSWORD",
+			envPassword:      "env-secret",
+			dockerPassword:   testutil.StringPtr(""),
+			expectedPostForm: `{"type":"docker","relationships":{"app":{"data":{"guid":"app-guid"}}},"data":{"image":"registry/image:latest"}}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("CF_DOCKER_PASSWORD", tt.envPassword)
+			serverURL := testutil.SetupFakeAPIServer()
+			defer testutil.Teardown()
+
+			g := testutil.NewObjectJSONGenerator()
+			pkg := g.PackageDocker()
+			testutil.Setup(testutil.MockRoute{
+				Method:   http.MethodPost,
+				Endpoint: "/v3/packages",
+				Output:   g.Single(pkg.JSON),
+				Status:   http.StatusCreated,
+				PostForm: tt.expectedPostForm,
+			}, t)
+
+			c, _ := config.New(serverURL, config.Token("", "fake-refresh-token"), config.SkipTLSValidation())
+			cf, err := client.New(c)
+			require.NoError(t, err)
+
+			pusher := NewAppPushOperation(cf, "", "")
+			if tt.dockerPassword != nil {
+				pusher.WithDockerPassword(*tt.dockerPassword)
+			}
+			app := &resource.App{Resource: resource.Resource{GUID: "app-guid"}, Name: "test-docker-app"}
+			docker := &AppManifestDocker{Image: "registry/image:latest", Username: tt.username}
+
+			_, err = pusher.uploadDockerPackage(context.Background(), app, docker)
+			require.NoError(t, err)
+		})
+	}
+}
+
 // TestDockerLifecycleStructure tests that docker builds have the correct lifecycle structure
 func TestDockerLifecycleStructure(t *testing.T) {
 	// Test the lifecycle structure directly without HTTP mocking

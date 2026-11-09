@@ -4,6 +4,7 @@
 
 ### Added
 
+- `AppPushOperation.WithDockerPassword` to set the docker registry password per push operation. It takes precedence over the `CF_DOCKER_PASSWORD` environment variable, so concurrent pushes in one process no longer have to share a process-wide variable.
 - Support for setting and reading application lifecycle (`buildpack`, `docker`, and `cnb`/Cloud Native Buildpacks) in V3 API.
 - Custom marshaling/unmarshaling for `Lifecycle` struct to support multiple lifecycle types.
 - Unit tests for all lifecycle types, including CNB.
