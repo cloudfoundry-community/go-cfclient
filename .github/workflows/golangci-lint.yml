@@ -2,12 +2,10 @@ name: golangci-lint
 on:
   push:
     branches:
-      - '*'
-    paths-ignore:
-      - 'README.md'
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 permissions:
   contents: read
