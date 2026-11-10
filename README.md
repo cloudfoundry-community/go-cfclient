@@ -2,7 +2,6 @@
 
 [![build workflow](https://github.com/cloudfoundry/go-cfclient/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/cloudfoundry/go-cfclient/actions/workflows/build.yml)
 [![GoDoc](https://godoc.org/github.com/cloudfoundry/go-cfclient/v3?status.svg)](http://godoc.org/github.com/cloudfoundry/go-cfclient/v3)
-[![Report card](https://goreportcard.com/badge/github.com/cloudfoundry/go-cfclient/v3)](https://goreportcard.com/report/github.com/cloudfoundry/go-cfclient/v3)
 
 ## Overview
 
