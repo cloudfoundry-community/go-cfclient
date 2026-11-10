@@ -97,7 +97,8 @@ func (t TimestampFilter) Serialize(values url.Values, tag string) error {
 		}
 		timestamps := make([]string, len(t.Timestamp))
 		for i, timestamp := range t.Timestamp {
-			timestamps[i] = timestamp.Format(time.RFC3339)
+			// The API requires UTC timestamps with a Z suffix.
+			timestamps[i] = timestamp.UTC().Format(time.RFC3339)
 		}
 		values.Add(tag, strings.Join(timestamps, ","))
 	}
