@@ -8,7 +8,7 @@ on:
       - 'README.md'
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   test:
@@ -16,11 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
-      - name: Set up Go 1.x
-        uses: actions/setup-go@v2
+        uses: actions/checkout@v6
+      - name: Set up Go
+        uses: actions/setup-go@v6
         with:
-          go-version: ^1.26
+          go-version-file: go.mod
       - name: Run Test
         run: make test
         shell: bash
