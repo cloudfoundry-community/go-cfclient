@@ -3,9 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - '*'
-    paths-ignore:
-      - 'README.md'
+      - main
   pull_request:
     branches:
       - main
