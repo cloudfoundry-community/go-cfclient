@@ -9,19 +9,19 @@
 Cloud Controller [v3 API](https://v3-apidocs.cloudfoundry.org). The v2 API is no longer supported, however if you **really**
 need to use the older API you may use the go-cfclient v2 branch and releases.
 
-**NOTE** - The v3 version in the main branch is currently under development and may have **breaking changes** until a v3.0.0 release is
-cut. Until then, you may want to pin to a specific v3.0.0-alpha.x release.
+**NOTE** - The v3 client is in beta and may have **breaking changes** until the v3.0.0 release.
+Pin to a specific beta release rather than depending on the development version in `main`.
 
 ## Installation
 
-go-cfclient is compatible with modern Go releases in module mode, with Go installed:
+go-cfclient requires Go 1.26.0 or later. To install v3.0.0-beta.2:
 
 ```shell
-go get github.com/cloudfoundry/go-cfclient/v3
+go get github.com/cloudfoundry/go-cfclient/v3@v3.0.0-beta.2
 ```
 
-Will resolve and add the package to the current development module, along with its dependencies. Eventually this
-library will cut releases that will be tagged with v3.0.0, v3.0.1 etc, see the Versioning section below.
+This adds the pinned client version and its dependencies to your module. See [Versioning](#versioning)
+for the release policy.
 
 ## Usage
 
