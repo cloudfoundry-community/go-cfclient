@@ -64,7 +64,7 @@ func (lo *ListOptions) ToQueryString(subOptionsPtr any) (url.Values, error) {
 }
 
 func serializeField(values url.Values, val reflect.Value) error {
-	if val.Kind() == reflect.Ptr {
+	if val.Kind() == reflect.Pointer {
 		if val.IsNil() {
 			return nil
 		}
@@ -79,7 +79,7 @@ func serializeField(values url.Values, val reflect.Value) error {
 		rawTag := fieldType.Tag.Get(filterTagName)
 		if (rawTag != "" && rawTag != "-") || fieldType.Type.Implements(listOptionsSerializerType) {
 			sv := val.Field(i)
-			if sv.Kind() == reflect.Ptr {
+			if sv.Kind() == reflect.Pointer {
 				if sv.IsNil() {
 					continue
 				}
