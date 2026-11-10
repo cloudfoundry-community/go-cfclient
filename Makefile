@@ -1,4 +1,5 @@
-GOLANG_CI_LINT_VERSION := $(shell golangci-lint --version 2>/dev/null)
+GOLANG_CI_LINT_VERSION ?= v2.15.0
+GOLANG_CI_LINT := ./bin/golangci-lint
 
 .PHONY: all
 all: test lint
@@ -17,17 +18,17 @@ generate: ## Generate fakes
 
 .PHONY: lint-prepare
 lint-prepare:
-ifdef GOLANG_CI_LINT_VERSION
-	@echo "Found golangci-lint $(GOLANG_CI_LINT_VERSION)"
-else
-	@echo "Installing golangci-lint"
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
-	@echo "[OK] golangci-lint installed"
-endif
+	@if ! $(GOLANG_CI_LINT) version --short 2>/dev/null | grep -Fxq '$(patsubst v%,%,$(GOLANG_CI_LINT_VERSION))'; then \
+		echo "Installing golangci-lint $(GOLANG_CI_LINT_VERSION)"; \
+		installer=$$(mktemp) || exit 1; \
+		trap 'rm -f "$$installer"' EXIT HUP INT TERM; \
+		curl -sSfL https://golangci-lint.run/install.sh -o "$$installer" && \
+		sh "$$installer" -b ./bin $(GOLANG_CI_LINT_VERSION) || exit 1; \
+	fi
 
 .PHONY: lint
 lint: lint-prepare ## Run the golangci linter
-	./bin/golangci-lint run
+	$(GOLANG_CI_LINT) run
 
 .PHONY: update
 update: ## Update all dependencies
